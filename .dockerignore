@@ -1,0 +1,9 @@
+.env
+.env.*
+run/
+models/
+*.log
+*.tmp
+*.swp
+__pycache__/
+.pytest_cache/

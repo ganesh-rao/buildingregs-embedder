@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "deploy": {
+    "aptPackages": ["libgomp1"],
+    "startCommand": "./start.sh"
+  },
+  "packages": {
+    "python": "3.13"
+  },
+  "steps": {
+    "install": {
+      "commands": ["python3 -m pip install --no-cache-dir boto3"]
+    }
+  }
+}
