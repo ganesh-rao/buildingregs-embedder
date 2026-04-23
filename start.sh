@@ -10,6 +10,7 @@ export PORT="${PORT:-80}"
 export MODEL_DIR
 export MODEL_PATH="${MODEL_PATH:-${MODEL_DIR}/nvidia-llama-nemotron-embed-vl-1b-v2-bf16.gguf}"
 export MMPROJ_PATH="${MMPROJ_PATH:-${MODEL_DIR}/nvidia-llama-nemotron-embed-vl-1b-v2-mmproj-bf16.gguf}"
+export PYTHONPATH="${SCRIPT_DIR}/.python-packages${PYTHONPATH:+:${PYTHONPATH}}"
 
 python3 "${SCRIPT_DIR}/download_models.py"
 

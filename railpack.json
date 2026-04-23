@@ -9,7 +9,7 @@
   },
   "steps": {
     "install": {
-      "commands": ["python3 -m pip install --no-cache-dir boto3"]
+      "commands": ["python3 -m pip install --no-cache-dir --target /app/.python-packages boto3"]
     }
   }
 }
