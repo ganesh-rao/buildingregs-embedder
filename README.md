@@ -57,20 +57,25 @@ Stop it with:
 ./stop.sh
 ```
 
-## Docker Deploy
+## Deploy
 
-This directory is deployment-friendly for Dockerfile-based hosts:
+This directory is deployment-friendly for Dockerfile-based hosts and DeployDash
+Railpack:
 
 - `Dockerfile` uses Ubuntu 24.04 so the bundled `llama-server` binary has
   compatible `glibc` and `libstdc++` versions.
+- `railpack.json` also sets Railpack's final runtime base image to
+  `ubuntu:24.04` for the same reason.
+- `railpack.json` installs Python and `boto3` for the startup model
+  downloader.
 - `start.sh` is the container entrypoint and binds `0.0.0.0`.
 - `start.sh` uses `${PORT}` when the platform injects it and otherwise
   defaults to port `80`.
 - GGUF files are downloaded from R2/S3 into `${MODEL_DIR}` at startup and
   verified by size and SHA-256 before `llama-server` starts.
 
-Build this repository from the Dockerfile. DeployDash should use Dockerfile
-runtime/build mode, not Railpack auto-detection.
+Prefer Dockerfile mode where available. DeployDash currently uses Railpack for
+this project, so `railpack.json` keeps that path compatible.
 
 For a public temporary deployment, expose the container service publicly through
 the hosting platform. The container serves HTTP; public HTTPS on port 443 should
