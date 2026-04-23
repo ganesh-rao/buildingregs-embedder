@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 MODEL_DIR="${MODEL_DIR:-/models/nemotron-embed-vl-1b-v2}"
 
-# Railpack-style container deploys need the server bound on all interfaces.
+# Container deploys need the server bound on all interfaces.
 export HOST="${HOST:-0.0.0.0}"
 export PORT="${PORT:-80}"
 export MODEL_DIR

@@ -9,7 +9,7 @@ It contains only what is needed to serve embeddings locally:
 - the BF16 main GGUF
 - the BF16 mmproj GGUF
 - a small launcher and smoke test
-- Railpack-friendly startup files
+- Dockerfile-based deployment files
 
 It does not need the raw HF checkpoint, PyTorch, or vLLM at runtime.
 
@@ -57,21 +57,22 @@ Stop it with:
 ./stop.sh
 ```
 
-## Railpack Deploy
+## Docker Deploy
 
-This directory is now deployment-friendly for Railpack:
+This directory is deployment-friendly for Dockerfile-based hosts:
 
-- `start.sh` is the container entrypoint and binds `0.0.0.0`
+- `Dockerfile` uses Ubuntu 24.04 so the bundled `llama-server` binary has
+  compatible `glibc` and `libstdc++` versions.
+- `start.sh` is the container entrypoint and binds `0.0.0.0`.
 - `start.sh` uses `${PORT}` when the platform injects it and otherwise
-  defaults to port `80`
-- `Procfile` exposes `web: ./start.sh`
-- `railpack.json` explicitly sets `deploy.startCommand` to `./start.sh`
+  defaults to port `80`.
 - GGUF files are downloaded from R2/S3 into `${MODEL_DIR}` at startup and
-  verified by size and SHA-256 before `llama-server` starts
+  verified by size and SHA-256 before `llama-server` starts.
 
-If Railpack builds this directory directly, the container start command should just work.
+Build this repository from the Dockerfile. DeployDash should use Dockerfile
+runtime/build mode, not Railpack auto-detection.
 
-For a public temporary deployment, expose the Railpack service publicly through
+For a public temporary deployment, expose the container service publicly through
 the hosting platform. The container serves HTTP; public HTTPS on port 443 should
 be terminated by the platform edge/proxy. Do not attempt to make
 `llama-server` manage TLS certificates directly.
