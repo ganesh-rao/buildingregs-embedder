@@ -17,11 +17,13 @@ MODEL_PATH="${MODEL_PATH:-${SCRIPT_DIR}/models/nvidia-llama-nemotron-embed-vl-1b
 MMPROJ_PATH="${MMPROJ_PATH:-${SCRIPT_DIR}/models/nvidia-llama-nemotron-embed-vl-1b-v2-mmproj-bf16.gguf}"
 HOST="${HOST:-127.0.0.1}"
 PORT="${PORT:-8095}"
-CTX_SIZE="${CTX_SIZE:-4096}"
-BATCH_SIZE="${BATCH_SIZE:-4096}"
-UBATCH_SIZE="${UBATCH_SIZE:-4096}"
-IMAGE_MAX_TOKENS="${IMAGE_MAX_TOKENS:-1024}"
+CTX_SIZE="${CTX_SIZE:-2048}"
+BATCH_SIZE="${BATCH_SIZE:-512}"
+UBATCH_SIZE="${UBATCH_SIZE:-512}"
+IMAGE_MAX_TOKENS="${IMAGE_MAX_TOKENS:-512}"
 PARALLEL="${PARALLEL:-1}"
+CACHE_RAM="${CACHE_RAM:-0}"
+NO_WARMUP="${NO_WARMUP:-1}"
 LLAMA_SERVER_EXTRA_ARGS="${LLAMA_SERVER_EXTRA_ARGS:-}"
 
 if [[ ! -x "${SCRIPT_DIR}/bin/llama-server" ]]; then
@@ -39,25 +41,12 @@ if [[ ! -f "${MMPROJ_PATH}" ]]; then
   exit 1
 fi
 
-if [[ -x "${COMPAT_LOADER}" ]]; then
-  exec "${COMPAT_LOADER}" \
-    --library-path "${LD_LIBRARY_PATH}" \
-    "${SCRIPT_DIR}/bin/llama-server" \
-    -m "${MODEL_PATH}" \
-    --mmproj "${MMPROJ_PATH}" \
-    --embedding \
-    --pooling mean \
-    --ctx-size "${CTX_SIZE}" \
-    --batch-size "${BATCH_SIZE}" \
-    --ubatch-size "${UBATCH_SIZE}" \
-    --image-max-tokens "${IMAGE_MAX_TOKENS}" \
-    -np "${PARALLEL}" \
-    --host "${HOST}" \
-    --port "${PORT}" \
-    ${LLAMA_SERVER_EXTRA_ARGS}
+EXTRA_ARGS=()
+if [[ -n "${LLAMA_SERVER_EXTRA_ARGS}" ]]; then
+  read -r -a EXTRA_ARGS <<< "${LLAMA_SERVER_EXTRA_ARGS}"
 fi
 
-exec "${SCRIPT_DIR}/bin/llama-server" \
+SERVER_ARGS=(
   -m "${MODEL_PATH}" \
   --mmproj "${MMPROJ_PATH}" \
   --embedding \
@@ -66,7 +55,35 @@ exec "${SCRIPT_DIR}/bin/llama-server" \
   --batch-size "${BATCH_SIZE}" \
   --ubatch-size "${UBATCH_SIZE}" \
   --image-max-tokens "${IMAGE_MAX_TOKENS}" \
+  --cache-ram "${CACHE_RAM}" \
   -np "${PARALLEL}" \
   --host "${HOST}" \
   --port "${PORT}" \
-  ${LLAMA_SERVER_EXTRA_ARGS}
+)
+
+if [[ "${NO_WARMUP}" != "0" && "${NO_WARMUP}" != "false" ]]; then
+  SERVER_ARGS+=(--no-warmup)
+fi
+
+SERVER_ARGS+=("${EXTRA_ARGS[@]}")
+
+echo "llama_server_launch host=${HOST} port=${PORT} ctx=${CTX_SIZE} batch=${BATCH_SIZE} ubatch=${UBATCH_SIZE} image_max_tokens=${IMAGE_MAX_TOKENS} cache_ram=${CACHE_RAM} no_warmup=${NO_WARMUP}" >&2
+
+if [[ -x "${COMPAT_LOADER}" ]]; then
+  echo "llama_server_loader path=${COMPAT_LOADER}" >&2
+  "${COMPAT_LOADER}" \
+    --library-path "${LD_LIBRARY_PATH}" \
+    "${SCRIPT_DIR}/bin/llama-server" \
+    "${SERVER_ARGS[@]}" &
+else
+  echo "llama_server_loader path=system" >&2
+  "${SCRIPT_DIR}/bin/llama-server" "${SERVER_ARGS[@]}" &
+fi
+
+server_pid=$!
+set +e
+wait "${server_pid}"
+status=$?
+set -e
+echo "llama_server_exit status=${status}" >&2
+exit "${status}"

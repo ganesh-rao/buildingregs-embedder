@@ -98,6 +98,8 @@ Relevant runtime env vars:
 - `BATCH_SIZE`
 - `UBATCH_SIZE`
 - `IMAGE_MAX_TOKENS`
+- `CACHE_RAM` (default `0`, disables llama.cpp prompt cache to reduce memory)
+- `NO_WARMUP` (default `1`, skips startup warmup to reduce peak memory)
 - `PARALLEL`
 - `LLAMA_SERVER_EXTRA_ARGS`
 - `RAG_S3_BUCKET`
@@ -170,6 +172,8 @@ You can override these at launch time:
 - `UBATCH_SIZE`
 - `IMAGE_MAX_TOKENS`
 - `PARALLEL`
+- `CACHE_RAM`
+- `NO_WARMUP`
 
 Example:
 
