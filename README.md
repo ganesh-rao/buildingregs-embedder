@@ -66,6 +66,9 @@ Railpack:
   compatible `glibc` and `libstdc++` versions.
 - `railpack.json` also sets Railpack's final runtime base image to
   `ubuntu:24.04` for the same reason.
+- `serve.sh` falls back to a bundled compatibility loader under
+  `compat/glibc-2.39` because DeployDash's Railpack wrapper can still produce a
+  Debian bookworm final image even when `railpack.json` requests Ubuntu 24.04.
 - `railpack.json` installs Python and `boto3` for the startup model
   downloader.
 - `start.sh` is the container entrypoint and binds `0.0.0.0`.
